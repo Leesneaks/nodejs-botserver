@@ -1,0 +1,2 @@
+node botserver.js
+@pause
