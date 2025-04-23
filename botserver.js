@@ -1,21 +1,38 @@
+const appTitle = 'NodeJS BotServer';
+const PORT = 8000;
+const statusIntervalMs = 60000; 
+
+const dependencies = ['ws'];
 const { execSync } = require('child_process');
 
-function checkAndInstallDependencies() {
-    try {
-        require.resolve('ws');
-    } catch (e) {
-        console.log('ws module not found. Installing...');
-        execSync('npm install ws', { stdio: 'inherit' });
-        console.log('ws module installed successfully.');
+const log = (...args) => {
+    const now = new Date();
+    const time = now.toTimeString().slice(0, 5);
+    console.log(`[${time}]`, ...args);
+};
+
+function ensureDependencies(modules) {
+    const missing = modules.filter(m => {
+        try { require.resolve(m); return false; }
+        catch { return true; }
+    });
+
+    if (missing.length) {
+        log(`\x1b[33mMissing dependencies:\x1b[0m ${missing.join(', ')}`);
+        log(`\x1b[36mInstalling ${missing.length} module(s)...\x1b[0m`);
+        execSync(`npm install ${missing.join(' ')}`, { stdio: 'inherit' });
+        log(`\x1b[32m✓ Dependencies installed.\x1b[0m\n`);
     }
 }
 
-checkAndInstallDependencies();
+console.log(`\n\x1b[1m\x1b[34m=== ${appTitle} ===\x1b[0m\n`);
+
+ensureDependencies(dependencies);
 
 const WebSocket = require('ws');
 
 const server = new WebSocket.Server({
-    port: 8000,
+    port: PORT,
     maxPayload: 64 * 1024,
 });
 
@@ -56,7 +73,7 @@ function processMessage(ws, message) {
         }
         channels[userData.channel].add(ws);
 
-        console.log(`${userData.name} has joined channel: ${userData.channel}`);
+        log(`\x1b[36m${userData.name} has joined channel:\x1b[0m \x1b[35m${userData.channel}\x1b[0m`);
         return;
     }
 
@@ -114,7 +131,7 @@ function sendPing() {
 
 server.on('connection', (ws) => {
     connections += 1;
-    console.log(`Client connected. Total connections: ${connections}`);
+    log(`\x1b[33mClient connected.\x1b[0m Total connections: \x1b[36m${connections}\x1b[0m`);
 
     ws.userData = {
         name: '',
@@ -149,7 +166,7 @@ server.on('connection', (ws) => {
                 delete channels[channel];
             }
         }
-        console.log(`${name} has disconnected from channel: ${channel}`);
+        log(`\x1b[31m${name} disconnected from channel:\x1b[0m \x1b[35m${channel}\x1b[0m`);
         connections -= 1;
     });
 
@@ -161,7 +178,7 @@ server.on('connection', (ws) => {
 setInterval(sendPing, 1000);
 
 setInterval(() => {
-    console.log(`Connections: ${connections}, Exceptions: ${exceptions}, Blocked: ${blocked}, Channels: ${Object.keys(channels).length}`);
-}, 5000);
+    log(`Connections: ${connections}, Exceptions: ${exceptions}, Blocked: ${blocked}, Channels: ${Object.keys(channels).length}`);
+}, statusIntervalMs);
 
-console.log('WebSocket server running on port 8000');
+log(`\x1b[32mWebSocket server running on port ${PORT}\x1b[0m`);

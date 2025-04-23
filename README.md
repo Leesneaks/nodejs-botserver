@@ -1,6 +1,6 @@
 # NodeJS WebSocket Server
-### DISCORD: https://discord.com/invite/SZJqxUynrG
 ### Website: https://www.trainorcreations.com
+### Discord: https://trainorcreations.com/discord
 ### Donate: https://trainorcreations.com/donate
 
 This project is a simple WebSocket server based off [otcv8botserver](https://github.com/OTCv8/otcv8botserver), built with Node.js using the `ws` library. The server automatically installs the required dependencies if they are missing.
@@ -13,7 +13,7 @@ Download and install Node.js from [https://nodejs.org/](https://nodejs.org/).
 
 ## Setup Instructions
 
-Double click on `run.bat` which will start the BotServer.
+Double click on `run.bat` which will start the BotServer this will download and install any required dependencies on first run.
 
 ## vBot Setup.
 Find `_Loader.lua` add the text below to first line 
