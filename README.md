@@ -15,7 +15,7 @@ Download and install Node.js from [https://nodejs.org/](https://nodejs.org/).
 
 Double click on `run.bat` which will start the BotServer this will download and install any required dependencies on first run.
 
-## vBot Setup.
+## vBot Setup
 Find `_Loader.lua` add the text below to first line 
 
 ```lua

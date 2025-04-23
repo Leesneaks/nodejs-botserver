@@ -1,6 +1,10 @@
 const appTitle = 'NodeJS BotServer';
-const PORT = 8000;
 const statusIntervalMs = 60000; 
+
+const PORT = 8000;
+const MAX_PAYLOAD = 64 * 1024;
+const MAX_PACKETS = 100;
+const MAX_TOPIC_LENGTH = 30;
 
 const dependencies = ['ws'];
 const { execSync } = require('child_process');
@@ -33,7 +37,7 @@ const WebSocket = require('ws');
 
 const server = new WebSocket.Server({
     port: PORT,
-    maxPayload: 64 * 1024,
+    maxPayload: MAX_PAYLOAD,
 });
 
 let connections = 0;
@@ -77,13 +81,14 @@ function processMessage(ws, message) {
         return;
     }
 
-    if (userData.packetsTime < Math.floor(Date.now() / 1000)) {
-        userData.packetsTime = Math.floor(Date.now() / 1000) + 1;
+    const currentSeconds = Math.floor(Date.now() / 1000);
+    if (userData.packetsTime < currentSeconds) {
+        userData.packetsTime = currentSeconds + 1;
         userData.packets = 0;
     }
 
     userData.packets += 1;
-    if (userData.packets > 100 || message.length > 64 * 1024) {
+    if (userData.packets > MAX_PACKETS || message.length > MAX_PAYLOAD) {
         blocked += 1;
         return ws.close();
     }
@@ -104,7 +109,7 @@ function processMessage(ws, message) {
         topic: msg.topic,
     };
 
-    if (!msg.topic || msg.topic.length > 30) {
+    if (!msg.topic || msg.topic.length > MAX_TOPIC_LENGTH) {
         return ws.close();
     }
 
@@ -145,7 +150,7 @@ server.on('connection', (ws) => {
     ws.messageId = 0;
 
     ws.on('message', (message) => {
-        if (message.length > 64 * 1024) {
+        if (message.length > MAX_PAYLOAD) {
             blocked += 1;
             return ws.close();
         }
