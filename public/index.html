@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BotServer Statistics</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>BotServer - Statistics</h1>
+            <div class="refresh-controls">
+                <label>
+                    <input type="checkbox" id="auto-refresh-toggle" checked>
+                    Auto Refresh
+                </label>
+                <input type="number" id="refresh-interval" value="1" min="1" max="60" step="1">
+                <span>sec</span>
+                <button class="refresh-btn" onclick="fetchStats()">Refresh Now</button>
+            </div>
+        </header>
+
+        <h2>WebSocket Stats</h2>
+        <div class="stats-overview">
+            <div class="stat-card">
+                <h3>Active Connections</h3>
+                <div class="stat-value" id="connections">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Channels</h3>
+                <div class="stat-value" id="channels">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Packets</h3>
+                <div class="stat-value" id="packets">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Blocked</h3>
+                <div class="stat-value" id="ws-blocked">0</div>
+            </div>
+        </div>
+
+        <h2>HTTP Stats</h2>
+        <div class="stats-overview">
+            <div class="stat-card">
+                <h3>Allowed</h3>
+                <div class="stat-value" id="http-allowed">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Blocked</h3>
+                <div class="stat-value" id="http-blocked">0</div>
+            </div>
+        </div>
+            
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('channels-tab')">Channels</div>
+            <div class="tab" onclick="showTab('users-tab')">Users</div>
+            <div class="tab" onclick="showTab('characters-tab')">Characters</div>
+        </div>
+        
+        <div id="channels-tab" class="tab-content channels-container active">
+            <h2>Active Channels</h2>
+            <table id="channels-table">
+                <thead>
+                    <tr>
+                        <th>Channel Name</th>
+                        <th># of Users</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody id="channels-body">
+                    <!-- Channel data will appear here -->
+                </tbody>
+            </table>
+        </div>
+            
+        <div id="users-tab" class="tab-content users-container">
+            <h2>Active Users</h2>
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Channel</th>
+                        <th>Ping</th>
+                        <th>Messages</th>
+                        <th>Packets</th>
+                        <th>Connected Time</th>
+                    </tr>
+                </thead>
+                <tbody id="users-body">
+                    <!-- User data will appear here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="characters-tab" class="tab-content characters-container">
+            <h2>Tibia Characters</h2>
+            <div class="responsive-table"></div>
+            <table id="characters-table">
+                <thead>
+                    <tr>
+                        <th>Character</th>
+                        <th>Level</th>
+                        <th>Vocation</th>
+                        <th>Health</th>
+                        <th>Mana</th>
+                        <th>Experience</th>
+                        <th>Location</th>
+                        <th>Last Update</th>
+                    </tr>
+                </thead>
+                <tbody id="characters-body">
+                    <!-- Character data will appear here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="info-bar">
+            <div class="ws-uptime" title="WebSocket Started: -">
+                WebSocket Uptime: <span id="ws-uptime">-</span>
+            </div>
+            <div id="last-updated">
+                Last updated: -
+            </div>
+        </div>
+
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
