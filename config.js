@@ -3,7 +3,6 @@ module.exports = {
     HTTP_HOST: 'localhost',
     HTTP_PORT: 8080,
     HTTP_ALLOWED_IPS: ['127.0.0.1', '::1'],
-    WS_STATUS_INTERVAL: 60000,
     WS_PORT: 8000,
     WS_MAX_PAYLOAD: 64 * 1024,
     WS_MAX_PACKETS: 100,

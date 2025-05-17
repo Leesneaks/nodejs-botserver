@@ -18,9 +18,21 @@ module.exports = async ({ config, utils, state }) => {
         next();
     });
 
-    const publicPath = path.resolve(__dirname, '..', 'public');
+    const publicPath = path.join(process.cwd(), 'public');
     app.use(express.static(publicPath));
     app.use(express.json());
+
+    apiRouter.get('/modules', (req, res) => {
+        const modules = state.loadedModules || [];
+        res.json(modules.map(m => ({
+            name: m.meta?.name,
+            version: m.meta?.version,
+            description: m.meta?.description,
+            file: m.file,
+            priority: m.meta?.priority || 0,
+            enabled: m.meta?.enabled !== false
+        })));
+    });
 
     apiRouter.get('/stats', (req, res) => {
         const { characters, channels, connections, exceptions, blocked, packets, httpAllowedRequests, httpBlockedRequests } = state;
@@ -79,6 +91,29 @@ module.exports = async ({ config, utils, state }) => {
 
     app.use('/api', apiRouter);
 
+    utils.registerWsHook('char_info', (ws, msg) => {
+        const m = msg.message;
+        if (typeof m !== 'object' || !m?.name) return true;
+
+        state.characters[m.name] = {
+            name: m.name,
+            level: m.level || 0,
+            vocation: m.vocation || 'Unknown',
+            health: m.health || 0,
+            maxHealth: m.maxHealth || 0,
+            healthPercent: m.maxHealth ? (m.health / m.maxHealth) * 100 : 0,
+            mana: m.mana || 0,
+            maxMana: m.maxMana || 0,
+            manaPercent: m.maxMana ? (m.mana / m.maxMana) * 100 : 0,
+            experience: m.experience || 0,
+            expPercent: m.expPercent || 0,
+            location: m.location || 'Unknown',
+            lastUpdate: utils.formatTimestamp()
+        };
+
+        return true;
+    }, state);
+
     await new Promise((resolve, reject) => {
         const host = config.HOST || 'localhost';
         httpServer.listen(config.HTTP_PORT, () => {
@@ -95,3 +130,12 @@ module.exports = async ({ config, utils, state }) => {
 };
 
 module.exports.deps = ['express'];
+
+module.exports.meta = {
+    name: 'http-server',
+    description: 'Express-based HTTP API and static file server with IP filtering and stats endpoint.',
+    author: 'Lee',
+    version: '1.0.0',
+    priority: 50,
+    enabled: true
+};

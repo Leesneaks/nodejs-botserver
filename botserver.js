@@ -10,7 +10,8 @@ const state = {
     httpBlockedRequests: 0,
     channels: {},
     characters: {},
-    wsStartTime: null
+    wsStartTime: null,
+    wsTopicHooks: {}
 };
 
 (async () => {

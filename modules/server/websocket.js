@@ -77,12 +77,6 @@ module.exports = async ({ config, utils, state }) => {
 
     setInterval(sendPing, config.PING_INTERVAL || 1000);
 
-    setInterval(() => {
-        utils.log.info(
-            `WS Connections: ${state.connections}, Exceptions: ${state.exceptions}, Blocked: ${state.blocked}, Packets: ${state.packets}, Channels: ${Object.keys(state.channels).length} | HTTP: ${state.httpAllowedRequests} Allowed, ${state.httpBlockedRequests} Blocked`
-        );
-    }, config.WS_STATUS_INTERVAL || 60000);
-
     function sendPing() {
         Object.keys(state.channels).forEach((channel) => {
             state.channels[channel].forEach((ws) => {
@@ -161,40 +155,20 @@ module.exports = async ({ config, utils, state }) => {
             return;
         }
 
-        if (msg.topic === 'char_info') {
-            if (typeof msg.message !== 'object' || msg.message === null) return;
-            processCharacterInfo(msg.message);
-            return;
+        response.message = msg.message;
+
+        const hook = state.wsTopicHooks?.[msg.topic];
+        if (hook) {
+            try {
+                const r = hook(ws, msg, response);
+                if (r === true) return;
+            } catch (err) {
+                utils.log.warn(`WS Hook Error [${msg.topic}]: ${err.message}`);
+            }
         }
 
-        response.message = msg.message;
         dispatchMessage(ws, response);
         userData.messagesSent++;
-    }
-
-    function processCharacterInfo(msg) {
-        if (!msg.name) return false;
-
-        const charName = msg.name;
-        const now = utils.formatTimestamp();
-
-        state.characters[charName] = {
-            name: charName,
-            level: msg.level || 0,
-            vocation: msg.vocation || 'Unknown',
-            health: msg.health || 0,
-            maxHealth: msg.maxHealth || 0,
-            healthPercent: msg.maxHealth ? (msg.health / msg.maxHealth * 100) : 0,
-            mana: msg.mana || 0,
-            maxMana: msg.maxMana || 0,
-            manaPercent: msg.maxMana ? (msg.mana / msg.maxMana * 100) : 0,
-            experience: msg.experience || 0,
-            expPercent: msg.expPercent || 0,
-            location: msg.location || 'Unknown',
-            lastUpdate: now
-        };
-
-        return true;
     }
 
     function dispatchMessage(ws, message) {
@@ -208,3 +182,12 @@ module.exports = async ({ config, utils, state }) => {
 };
 
 module.exports.deps = ['ws'];
+
+module.exports.meta = {
+    name: 'websocket-server',
+    description: 'WebSocket server for handling real-time client communication, channels, and ping tracking.',
+    author: 'Lee',
+    version: '1.0.0',
+    priority: 60,
+    enabled: true
+};
